@@ -154,6 +154,17 @@ QAbstractItemView     QTreeView     QTreeWidget
 4. 项的角色：在为数据模型的一个项设置数据时，可以赋予其不同项的角色的数据。
 5. 模型中的每个项都有一组与其关联的数据元素，每个元素都有自己的角色。视图使用这些角色向模型指示它需要哪种类型的数据。 
 
+### QFileSystemModel
+
+如同Windoes的资源管理器一样。使用QFileSystemModel提供的接口函数，可以创建目录、删除目录、重命名目录，可以获得文件名称、目录名称、文件大小等参数，还可以获取文件的详细信息。
+QFileSystemModel* model = new QFileSystemModel(this);
+model->SetRootpath(QDir::currentPath());
+
+### QStringListModel
+
+1. setStringList()函数可以初始化数据模型的字符串列表的内容
+2. 提供编辑和修改字符串列表数据的函数，如insertRows()、removeRows()、SetData()等
+
 ## UI文件设计与运行机制
 QMainWindow： 主窗口类，具有主菜单、工具栏和状态栏，类似一般程序的主窗口。
 QWidget: 是所有具有可视化界面的基类，各种界面组件都支持
