@@ -1,23 +1,67 @@
-## 主事件循环
 
- １.　QCoreApplication: 为非GUI应用程序提供主事件循环
- ２.　QuiApplication: 为GUI应用程序提供主事件循环
- 3.  QAppliction: 为Qt Widgets模块提供主事件循环
+## Qt简介
+
+## UI文件设计与运行机制
+
+QMainWindow： 主窗口类，具有主菜单、工具栏和状态栏，类似一般程序的主窗口。
+QWidget: 是所有具有可视化界面的基类，各种界面组件都支持
+QDialog：对话框类，建立基于对话框的界面
+
+1. 通过Qt的设计师设计的界面会生成相应的.ui文件，该文件是由xml语言编写的。  例如ui文件为widget.ui, 通过UIC生成ui_widget.h
+2. QT通过UIC(c++程序)读取.ui文件(xml),从而生成C++头文件ui_ui文件名.h
+3. 定义了Ui_ui文件名的类，类中包含setUpUi(实现了.ui文件)和retranslate(进行翻译)。还定义了Ui的命名空间，在命名空间中声明了ui文件名的类并继承自Ui_ui文件名的类。  
+ui的修改只能通过ui设计师修改，不能修改ui_widget.h
+
+### 可视化UI设计
+
+### 代码化UI设计
+
+### 混合方式UI设计
+
+1. Action: 非常有用的类，可以创建菜单项、工具栏按钮
+
+## Qt核心特点
+
+1. Qt对标准C++进行了扩展，引入了一些新的概念和功能
+2. 元对象编译器(Meta-Object Compiler， MOC)是一个预处理器
+3. Qt先将Qt的特性程序转换为标准C++程序，再由标准C++编译器进行编译
+
+**使用信号与槽机制，只有添加Q_OBJECT宏， moc才能对类里的信号与槽进行预处理**
+**Qt为C++语言增加的特性再Qt Core模块中实现，由Qt的元对象系统实现，包括：信号与槽机制、属性系统、动态类型转换等**
+
+### 元对象系统
+
+1. QObject类是所有使用元对象系统的类的基类
+2. 在一个类的private部分声明Q_OBJECT宏
+3. MOC为每个Qbject的子类提供必要的代码
+4. QObject的子类可以通过QObject::metaObject返回类关联的元对象
+~~~C++
+ QObject *obj = new QPushButton;
+ obj->metaObject()->className(); //返回"QPushButton"
+~~~
+5. 动态类型转换 使用qobject_cast<> 可以进行QObject子类的动态类型转换
+~~~C++
+QObject *obj = new QMyWidget;
+
+QWidget *widget = qobject_cast<QWidget*>(obj);
+QMyWidget* QMyWidget = qobject_cast<QMyWidget*>(obj)
+QLabel* label = qobject_cast<QLabel*>(obj);  //不会报错， label为NULL
+~~~
+6. QObject是Qt对象模型的核心。QObject不支持拷贝，QObject的拷贝函数和赋值运算符是私有的，并且使用了Q_DISABLE_COPY()宏。
+7. QObject在对象树中组织自己。当以另一个对象作为父对象创建QObject时，该对象将自动将自身添加到父对象的子对象列表中。父对象删除时，它将自动删除器子对象。可以使用findChildren()按名称和可选类型查找对象。
+ 
+
+### 主事件循环
+
+１. QCoreApplication: 为非GUI应用程序提供主事件循环
+２.　QuiApplication: 为GUI应用程序提供主事件循环
+3.   QAppliction: 为Qt Widgets模块提供主事件循环
 
  继承关系： QObject -> QCoreApplication -> QGuiAppliction -> QApplication  
 
 QCoreApplication包括主事件循环，处理和分发来自操作系统和其他源的所有事件。它还处理应用程序的初始化与终结，以及系统范围和应用程序范围的设置。
-
-QObject类是所有使用元对象系统的类的基类，并不是所有Q开头的类都是Qbject的派生类，例如QString
-使用信号和槽机制，只有添加Q_OBJECT的宏，moc才能对类里的信号和槽进行预处理。
-MOC（元对象编译器）为每个QObject的子类提供必要的代码，元对象编译器是一个预处理器，先将Qt的特性程序转换为标准C++程序，在由C++编译器进行编译。
-QT为C++语言增加的特性在QT Core模块里实现，由Qt的元对象系统实现。包括：信号与槽机制、属性系统、动态类型转换等。
-元对象系统是一个C++扩展，使该语言更合适真正的组件化GUI编程。
-
-QObject是Qt对象模型的核心。QObject不支持拷贝，QObject的拷贝函数和赋值运算符是私有的，并且使用了Q_DISABLE_COPY()宏。
-QObject在对象树中组织自己。
-  当以另一个对象作为父对象创建QObject时，该对象将自动将自身添加到父对象的子对象列表中。父对象删除时，它将自动删除器子对象。可以使用findChildren()按名称和可选类型查找对象。
-## 事件与信号
+  
+### 事件与信号
 
 所有GUI应用程序都是事件驱动的。事件主要由应用程序的用户生成，但也可以通过其他方式生成，例如Internet连接、窗口管理器或计时器。当调用exec方法时，应用程序进入主循环。主循环获取事件并将器发送到对象。
 
@@ -25,7 +69,7 @@ QObject在对象树中组织自己。
  Qt具有独特的信号和插槽机制。这种信号和插槽机制是对C++编程语言的扩展； 信号和槽用于对象之间的通信; 槽slot是一种普通的C++函数，当与之相连的信号发出时，调用它。
 
  #### 几种连接信号和槽的方法。
- 1. 使用成员函数指针。  优点：允许编译器检查信号是否与槽的参数兼容。 编译器可以隐式转换参数。(推荐)
+ 1. 使用成员函数指针。  优点：允许编译器检查信号是否与槽的参数兼容。 编译器可以隐式转换参数。(推荐) 如果遇到有重载的函数可以使用qOverload<>宏
     connect(sender,&QObject::destroyed, this, &MyObject::objectDestroyed);
  2. 利用仿函数或lambda表达式作为slot
   connect(sender, &QObject::destroyed, this, [=](){this->m_object.remove(sender);});
@@ -60,7 +104,8 @@ QObject在对象树中组织自己。
 2. 要声明属性，请在继承QObject的类中使用Q_PROPERTY()宏，Q_PROPERTY宏定义一个返回类型为type，名称为name的属性。
 3. 可以使用QObject::property和QObject::setProperty读取和写入属性，而不需要知道除属性名称以外的关于类的任何信息。
 4. 通过查询类的QObject、QMetaObject、QMetaProperties,可以在运行时发现类的属性
-```
+
+```C++
 //属性的操作
 QObject* object =    //获取对象指针
 const QMetaObject* metaobject = object->metaobject = object->metaObject(); 获取属性的元对象
